@@ -13,7 +13,7 @@ const getUserByEmail = async (email) => {
 };
 
 const createUser = async (user_info) => {
-  const { email, first_name, last_name, phone_number, province, year_of_birth, gender_identity } = user_info;
+  const { email, first_name, last_name, phone_number, province } = user_info;
 
   const request = new sql.Request();
 
@@ -22,12 +22,10 @@ const createUser = async (user_info) => {
   request.input('last_name', sql.NVarChar, last_name);
   request.input('phone_number', sql.NVarChar, phone_number);
   request.input('province', sql.NVarChar, province);
-  request.input('year_of_birth', sql.Int, year_of_birth);
-  request.input('gender_identity', sql.NVarChar, gender_identity);
 
   const result = await request.query(`
-    INSERT INTO Survey.users (email, first_name, last_name, phone_number, province, year_of_birth, gender_identity)
-    VALUES (@email, @first_name, @last_name, @phone_number, @province, @year_of_birth, @gender_identity);
+    INSERT INTO Survey.users (email, first_name, last_name, phone_number, province)
+    VALUES (@email, @first_name, @last_name, @phone_number, @province);
     SELECT SCOPE_IDENTITY() AS user_id;
   `);
 
