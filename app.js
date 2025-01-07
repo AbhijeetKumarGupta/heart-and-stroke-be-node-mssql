@@ -3,7 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { connectDB } = require('./config/database');
-const surveyRoutes = require('./routes/surveyRoutes');
+const submissionRoutes = require('./routes/submissionRoutes');
 const app = express();
 
 connectDB();
@@ -12,7 +12,7 @@ app.use(cors());
 
 app.use(express.json());
 
-app.use('/api', surveyRoutes);
+app.use('/api', submissionRoutes);
 
 const PORT = process.env.PORT || 8080;
 

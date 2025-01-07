@@ -1,11 +1,10 @@
-const { sql } = require('../config/database');
 const userModel = require('../models/userModel');
 const questionModel = require('../models/questionModel');
 const optionModel = require('../models/optionModel');
 const submissionModel = require('../models/submissionModel');
 const userResponseModel = require('../models/userResponseModel');
 
-const createSurvey = async (data) => {
+const createSubmission = async (data) => {
   const { user_info, answers } = data;
   const { email } = user_info;
 
@@ -34,57 +33,47 @@ const createSurvey = async (data) => {
 };
 
 const getUserSubmissions = async (userId) => {
-  const request = new sql.Request();
+  const userSubmissions = await submissionModel.getUserSubmissions(userId)
+  return userSubmissions;
 
-  request.input('userId', sql.Int, userId);
+}
 
-  const result = await request.query(`
-    SELECT 
-      s.id AS submission_id,
-      s.submission_date
-    FROM 
-      Survey.submissions s
-    WHERE 
-      s.user_id = @userId;
-  `);
-  
-  return result?.recordset || [];
+const getUserSubmission = async (userId, submissionId) => {
+  const submissionData = await submissionModel.getUserSubmission(userId, submissionId);
+  return transformSubmissionData(submissionData);
 };
 
 
-const getSubmission = async (submissionId) => {
-  const request = new sql.Request();
+const transformSubmissionData = (data) => {
+  if (!data || data.length === 0) {
+      return {};
+  }
 
-  request.input('submissionId', sql.Int, submissionId);
+  const userInfo = {
+      email: data[0]?.email,
+      first_name: data[0]?.first_name,
+      last_name: data[0]?.last_name,
+      phone_number: data[0]?.phone_number,
+      province: data[0]?.province,
+  };
 
-  const query = `
-    SELECT 
-      u.id AS user_id,
-      u.email,
-      u.first_name,
-      u.last_name,
-      u.phone_number,
-      u.province,
-      q.question_name,
-      o.option_name,
-      o.points
-    FROM 
-      Survey.users u
-    JOIN 
-      Survey.submissions s ON u.id = s.user_id
-    JOIN 
-      Survey.user_responses ur ON s.id = ur.submission_id
-    JOIN 
-      Survey.questions q ON ur.question_id = q.id
-    JOIN 
-      Survey.options o ON ur.option_id = o.id
-    WHERE 
-      s.id = @submissionId;
-  `;
+  const answers = data.reduce((acc, row) => {
+      const question = row?.question_name;
+      const option = row?.option_name;
+      const points = row?.points;
 
-  const result = await request.query(query);
+      if (!acc[question]) {
+          acc[question] = {};
+      }
+      acc[question][option] = points;
 
-  return result?.recordset || [];
+      return acc;
+  }, {});
+
+  return {
+      user_info: userInfo,
+      answers: answers,
+  };
 };
 
-module.exports = { createSurvey, getUserSubmissions, getSubmission };
+module.exports = { createSubmission, getUserSubmission, getUserSubmissions };
