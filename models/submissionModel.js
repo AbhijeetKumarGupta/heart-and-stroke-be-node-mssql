@@ -62,8 +62,6 @@ const getUserSubmission = async (userId, submissionId) => {
     WHERE 
       s.id = @submissionId AND u.id = @userId;
   `);
-  console.log(result, {userId, submissionId})
-
 
   return result?.recordset || [];
 };
