@@ -7,7 +7,7 @@ const config = {
   database: process.env.DB_NAME,
   options: {
     encrypt: true,
-    // trustServerCertificate: true // For local development
+    trustServerCertificate: process.env.TRUST_SERVER_CERTIFICATE // For local development
   },
   port: 1433
 };
